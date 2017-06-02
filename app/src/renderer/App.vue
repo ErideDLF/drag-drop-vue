@@ -1,20 +1,19 @@
 <template>
   <div id="app">
-    <main-container></main-container>
+    <landing-page></landing-page>
   </div>
 </template>
 
 <script>
-  import MainContainer from 'components/MainContainer/MainContainer';
+  import LandingPage from 'components/LandingPageView'
   export default {
     components: {
-      MainContainer,
-    },
-  };
+      LandingPage
+    }
+  }
 </script>
 
-<style lang="scss">
-  @import '~bulma';
+<style>
   @import url(https://fonts.googleapis.com/css?family=Lato:300);
 
   * {

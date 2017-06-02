@@ -1,6 +1,6 @@
 # burdeos
 
-> bla bla bla
+> prueba de aplicación que usa dropzone
 
 ## Build Setup
 
