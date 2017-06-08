@@ -5,7 +5,7 @@
         <div class='field'>
           <p class='control'>
             <span class='select'>
-              <select v-model='project'>
+              <select name="project" @change='onSelect'>
                 <option>Savia</option>
                 <option>opción 1</option>
                 <option>opción 2</option>
@@ -17,7 +17,7 @@
         <div class='field'>
           <p class='control'>
             <span class='select'>
-              <select v-model='subject'>
+              <select name="subject" @change='onSelect'>
                 <option>Mates</option>
                 <option>Lengua</option>
                 <option>Geografia</option>
@@ -28,7 +28,7 @@
         <div class='field'>
           <p class='control'>
             <span class='select'>
-              <select v-model='level'>
+              <select name="level" @change='onSelect'>
                 <option>1º</option>
                 <option>2º</option>
                 <option>3º</option>
@@ -37,7 +37,8 @@
             </span>
           </p>
         </div>
-        <a class="button is-info">Re-name</a>
+        <a class='button is-info'
+          v-on:click='onRenameFile'>Re-name</a>
       </div>
       <div class='column is-three-quarters'>
         <div id='dropzone-wrapper' class='tile'>
@@ -53,7 +54,7 @@
                     @droply-file-added='onFileAdded'
                     @droply-removed-file='onFileRemoved'
                     @droply-success='onSuccess'
-                    @maxNumberOfFiles = 1>
+                    @maxNumberOfFiles='1'>
             </droply>
           </div>
         </div>
@@ -72,26 +73,20 @@
     },
     data() {
       return {
-        project: 'Savia',
-        subject: 'Mates',
-        level: '1º',
-        file: {},
+        compoundName: {
+          project: 'Savia',
+          subject: 'Mates',
+          level: '1º',
+        },
+        file: null,
         processQueue: false,
         showRemoveAllButton: false,
       };
     },
-    watch: {
-      project: function project(newData, oldData) {
-        console.info('project updated', newData, oldData);
-      },
-      subject: function subject(newData, oldData) {
-        console.info('project updated', newData, oldData);
-      },
-      level: function level(newData, oldData) {
-        console.info('project updated', newData, oldData);
-      },
-    },
     methods: {
+      onSelect(event) {
+        this.compoundName[event.target.name] = event.target.value;
+      },
       onFileAdded() {
         this.showRemoveAllButton = true;
       },
@@ -104,6 +99,39 @@
       },
       removeAll() {
         this.$refs.droplyOne.removeAllFiles();
+      },
+      isNameCorrect() {
+        const me = this;
+        const promise = new Promise((resolve, reject) => {
+          let isValid = true;
+          let newName = '';
+          const properties = Object.keys(me.compoundName);
+          const max = properties.length;
+          for (let i = 0; i < max; i++) {
+            if (!me.compoundName[properties[i]]) {
+              isValid = false;
+              break;
+            }
+            newName += me.compoundName[properties[i]];
+            newName += '_';
+          }
+          if (isValid) resolve(newName);
+          else reject(new Error('Nos has rellenado todos los campos!!'));
+        });
+        return promise;
+      },
+      showError(type) {
+        console.log('ERROR!!: ', type);
+      },
+      onRenameFile() {
+        const me = this;
+        if (!me.file) {
+          me.showError('file');
+          return;
+        }
+        me.isNameCorrect()
+        .then(newName => me.$electron.ipcRenderer.send('renameFile', me.file.path, me.file.name, newName),
+        () => { me.showError('name'); });
       },
     },
   };

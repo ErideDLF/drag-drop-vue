@@ -1,5 +1,4 @@
-import { app, BrowserWindow } from 'electron' // eslint-disable-line
-
+import { app, BrowserWindow, ipcMain, fs } from 'electron' // eslint-disable-line
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -42,6 +41,14 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
+});
+
+ipcMain.on('renameFile', (event, file) => {
+  console.log('dios', file);
+//   fs.rename('/path/to/Afghanistan.png', '/path/to/AF.png', function(err) {
+//     if ( err ) console.log('ERROR: ' + err);
+// });
+  return file;
 });
 
 /**

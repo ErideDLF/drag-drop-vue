@@ -1096,6 +1096,12 @@ __WEBPACK_IMPORTED_MODULE_0_electron__["app"].on('activate', function () {
     createWindow();
   }
 });
+
+__WEBPACK_IMPORTED_MODULE_0_electron__["ipcMain"].on('renameFile', function (event, file) {
+  console.log('dios', file);
+
+  return file;
+});
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "src/main"))
 
 /***/ }),
