@@ -43,12 +43,21 @@ app.on('activate', () => {
   }
 });
 
-ipcMain.on('renameFile', (event, file) => {
-  console.log('dios', file);
-//   fs.rename('/path/to/Afghanistan.png', '/path/to/AF.png', function(err) {
-//     if ( err ) console.log('ERROR: ' + err);
-// });
-  return file;
+ipcMain.on('renameFile', (event, filePath, oldName, newName) => {
+  const fileType = oldName.split('.');
+  const str = `${newName}.${fileType[fileType.length - 1]}`;
+
+  console.log('archivo:', filePath, str);
+  fs.rename(filePath + oldName, filePath + str, (err) => {
+    if (err) {
+      event.sender.send('error-renameFile', err);
+      console.log('ERROR: ', err);
+    } else {
+      console.log('BIEN:evento ');
+      event.sender.send('success-renameFile');
+    }
+  });
+  return str;
 });
 
 /**

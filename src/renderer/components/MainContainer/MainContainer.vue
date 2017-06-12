@@ -107,13 +107,14 @@
           let newName = '';
           const properties = Object.keys(me.compoundName);
           const max = properties.length;
-          for (let i = 0; i < max; i++) {
+          let i = 0;
+          for (; i < max; i += 1) {
             if (!me.compoundName[properties[i]]) {
               isValid = false;
               break;
             }
             newName += me.compoundName[properties[i]];
-            newName += '_';
+            if ((i + 1) < max) newName += '_';
           }
           if (isValid) resolve(newName);
           else reject(new Error('Nos has rellenado todos los campos!!'));
@@ -129,10 +130,22 @@
           me.showError('file');
           return;
         }
+        const path = me.file.path.substring(0, me.file.path.lastIndexOf('/'));
         me.isNameCorrect()
-        .then(newName => me.$electron.ipcRenderer.send('renameFile', me.file.path, me.file.name, newName),
+        .then(newName => me.$electron.ipcRenderer.send('renameFile', path, me.file.name, newName),
         () => { me.showError('name'); });
       },
+    },
+    created() {
+      const me = this;
+      me.$electron.ipcRenderer.on('error-renameFile', (event, arg) => {
+        // Print 2
+        console.log('irene', arg);
+      });
+      me.$electron.ipcRenderer.on('success-renameFile', (event, arg) => {
+        // Print 2
+        console.log('irene', arg);
+      });
     },
   };
 </script>

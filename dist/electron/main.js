@@ -1097,10 +1097,21 @@ __WEBPACK_IMPORTED_MODULE_0_electron__["app"].on('activate', function () {
   }
 });
 
-__WEBPACK_IMPORTED_MODULE_0_electron__["ipcMain"].on('renameFile', function (event, file) {
-  console.log('dios', file);
+__WEBPACK_IMPORTED_MODULE_0_electron__["ipcMain"].on('renameFile', function (event, filePath, oldName, newName) {
+  var fileType = oldName.split('.');
+  var str = newName + '.' + fileType[fileType.length - 1];
 
-  return file;
+  console.log('archivo:', filePath, str);
+  __WEBPACK_IMPORTED_MODULE_0_electron__["fs"].rename(filePath + oldName, filePath + str, function (err) {
+    if (err) {
+      event.sender.send('error-renameFile', err);
+      console.log('ERROR: ', err);
+    } else {
+      console.log('BIEN:evento ');
+      event.sender.send('success-renameFile');
+    }
+  });
+  return str;
 });
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "src/main"))
 
