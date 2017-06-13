@@ -1,4 +1,5 @@
-import { app, BrowserWindow, ipcMain, fs } from 'electron' // eslint-disable-line
+import { app, BrowserWindow, ipcMain } from 'electron' // eslint-disable-line
+import fs from 'fs';
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -44,20 +45,21 @@ app.on('activate', () => {
 });
 
 ipcMain.on('renameFile', (event, filePath, oldName, newName) => {
+  //TODO: seguramente esto ssólos irva para mac... comprobar en el resto de S.O.
   const fileType = oldName.split('.');
-  const str = `${newName}.${fileType[fileType.length - 1]}`;
+  const oldFilePath = `${filePath}/${oldName}`;
+  const newFilePath = `${filePath}/${newName}.${fileType[fileType.length - 1]}`;
 
-  console.log('archivo:', filePath, str);
-  fs.rename(filePath + oldName, filePath + str, (err) => {
+  console.log('archivo:', oldFilePath, newFilePath);
+  console.log(fs);
+  fs.rename(oldFilePath, newFilePath, (err) => {
     if (err) {
       event.sender.send('error-renameFile', err);
       console.log('ERROR: ', err);
     } else {
-      console.log('BIEN:evento ');
-      event.sender.send('success-renameFile');
+      event.sender.send('success-renameFile', newFilePath);
     }
   });
-  return str;
 });
 
 /**

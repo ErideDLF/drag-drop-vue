@@ -137,6 +137,7 @@
       },
     },
     created() {
+      console.log('created: ');
       const me = this;
       me.$electron.ipcRenderer.on('error-renameFile', (event, arg) => {
         // Print 2

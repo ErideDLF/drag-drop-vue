@@ -1061,6 +1061,10 @@ module.exports = require("util");
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* WEBPACK VAR INJECTION */(function(__dirname) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_electron__ = __webpack_require__(2);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_electron___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_electron__);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs__ = __webpack_require__(1);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_fs___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_fs__);
+
+
 
 if (process.env.NODE_ENV !== 'development') {
   global.__static = __webpack_require__(0).join(__dirname, '/static');
@@ -1099,19 +1103,19 @@ __WEBPACK_IMPORTED_MODULE_0_electron__["app"].on('activate', function () {
 
 __WEBPACK_IMPORTED_MODULE_0_electron__["ipcMain"].on('renameFile', function (event, filePath, oldName, newName) {
   var fileType = oldName.split('.');
-  var str = newName + '.' + fileType[fileType.length - 1];
+  var oldFilePath = filePath + '/' + oldName;
+  var newFilePath = filePath + '/' + newName + '.' + fileType[fileType.length - 1];
 
-  console.log('archivo:', filePath, str);
-  __WEBPACK_IMPORTED_MODULE_0_electron__["fs"].rename(filePath + oldName, filePath + str, function (err) {
+  console.log('archivo:', oldFilePath, newFilePath);
+  console.log(__WEBPACK_IMPORTED_MODULE_1_fs___default.a);
+  __WEBPACK_IMPORTED_MODULE_1_fs___default.a.rename(oldFilePath, newFilePath, function (err) {
     if (err) {
       event.sender.send('error-renameFile', err);
       console.log('ERROR: ', err);
     } else {
-      console.log('BIEN:evento ');
-      event.sender.send('success-renameFile');
+      event.sender.send('success-renameFile', newFilePath);
     }
   });
-  return str;
 });
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, "src/main"))
 
