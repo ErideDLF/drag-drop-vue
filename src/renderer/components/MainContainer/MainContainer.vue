@@ -1,41 +1,32 @@
 <template>
   <div id='main-wrapper' class='content'>
+    <div class='notification-wrapper' v-if='notifications.length > 0'>
+      <div v-for='(item, index) in notifications'
+          :class='item.type'
+          :item='item'
+          :key='index'>
+        <button class='delete' v-on:click='closeAlert(index)'></button>
+        {{item.message}}
+      </div>
+    </div>
+
     <div class='columns'>
       <div class='column'>
-        <div class='field'>
-          <p class='control'>
+        <div v-for='(item, index) in nameOptions'
+              class='field'
+              :key='index'>
+          <p class='control'> {{item.name}}
             <span class='select'>
-              <select name="project" @change='onSelect'>
-                <option>Savia</option>
-                <option>opción 1</option>
-                <option>opción 2</option>
-                <option>opción 3</option>
+              <select name='item.name' @change='onSelect'>
+                <option v-for='(option, index) in item.options'
+                        :value='option.name'
+                        :key='index'>
+                  {{option.value}}
+                </option>
               </select>
             </span>
           </p>
         </div>
-        <div class='field'>
-          <p class='control'>
-            <span class='select'>
-              <select name="subject" @change='onSelect'>
-                <option>Mates</option>
-                <option>Lengua</option>
-                <option>Geografia</option>
-              </select>
-            </span>
-          </p>
-        </div>
-        <div class='field'>
-          <p class='control'>
-            <span class='select'>
-              <select name="level" @change='onSelect'>
-                <option>1º</option>
-                <option>2º</option>
-                <option>3º</option>
-                <option>4º</option>
-              </select>
-            </span>
-          </p>
         </div>
         <a class='button is-info'
           v-on:click='onRenameFile'>Re-name</a>
@@ -45,7 +36,7 @@
           <div class='tile is-child box'>
             <p class='title'>Hello World</p>
             <p class='text-center'>
-              This is as simple Dropzone demo using Vue.js
+              Arrastra o selecciona el archivo que quieras renombrar :)
             </p>
             <droply id='myDroply'
                     ref='droplyOne'
@@ -53,8 +44,7 @@
                     upload-message-text='Drop file(s) to upload <br><strong>or click</strong>'
                     @droply-file-added='onFileAdded'
                     @droply-removed-file='onFileRemoved'
-                    @droply-success='onSuccess'
-                    @maxNumberOfFiles='1'>
+                    @droply-success='onSuccess'>
             </droply>
           </div>
         </div>
@@ -73,14 +63,65 @@
     },
     data() {
       return {
-        compoundName: {
-          project: 'Savia',
-          subject: 'Mates',
-          level: '1º',
-        },
+        nameOptions: [
+          {
+            name: 'project',
+            options: [
+              {
+                name: 'savia',
+                value: 'savia',
+              }, {
+                name: 'noe',
+                value: 'noe',
+              }, {
+                name: 'diversion',
+                value: 'diversión',
+              }, {
+                name: 'matesActivas',
+                value: 'mates activas',
+              },
+            ],
+          }, {
+            name: 'subject',
+            options: [
+              {
+                name: 'lengua',
+                value: 'Lengua',
+              }, {
+                name: 'mates',
+                value: 'Matemáticas',
+              }, {
+                name: 'geografia',
+                value: 'Geografía',
+              }, {
+                name: 'latin',
+                value: 'Latín',
+              },
+            ],
+          }, {
+            name: 'level',
+            options: [
+              {
+                name: '1ESO',
+                value: '1º eso',
+              }, {
+                name: '2ESO',
+                value: '2º eso',
+              }, {
+                name: '3ESO',
+                value: '3º eso',
+              }, {
+                name: '4ESO',
+                value: '4º eso',
+              },
+            ],
+          },
+        ],
         file: null,
         processQueue: false,
         showRemoveAllButton: false,
+        notifications: [],
+        compoundName: null,
       };
     },
     methods: {
@@ -88,14 +129,19 @@
         this.compoundName[event.target.name] = event.target.value;
       },
       onFileAdded() {
+        if (this.$refs.droplyOne) {
+          console.info('A file was successfully uploaded', this.$refs.droplyOne);
+        }
         this.showRemoveAllButton = true;
       },
       onFileRemoved() {
         this.showRemoveAllButton = false;
+        this.$refs.droplyOne.dropzone.enable();
       },
       onSuccess(file) {
         console.info('A file was successfully uploaded', file, this.$refs.droplyOne);
         this.file = file;
+        this.$refs.droplyOne.dropzone.disable();
       },
       removeAll() {
         this.$refs.droplyOne.removeAllFiles();
@@ -121,31 +167,48 @@
         });
         return promise;
       },
-      showError(type) {
-        console.log('ERROR!!: ', type);
+      showError(classType, messageText) {
+        console.log('ERROR!!: ', classType);
+        this.notifications.push({
+          type: `notification ${classType}`,
+          message: messageText,
+        });
+      },
+      closeAlert(notificationIndex) {
+        this.notifications.splice(notificationIndex, 1);
       },
       onRenameFile() {
         const me = this;
         if (!me.file) {
-          me.showError('file');
+          me.showError('is-danger', 'Debes elegir un archivo.');
           return;
         }
         const path = me.file.path.substring(0, me.file.path.lastIndexOf('/'));
         me.isNameCorrect()
         .then(newName => me.$electron.ipcRenderer.send('renameFile', path, me.file.name, newName),
-        () => { me.showError('name'); });
+        () => { me.showError('is-danger', 'comprueba que todos los campos tengan un valor.'); });
       },
+      generateFields() {
+        let temp;
+        this.nameOptions.forEach((option) => {
+          temp[option.name] = '';
+        });
+        return temp;
+      },
+    },
+    beforeMount() {
+      this.compoundName = this.generateFields();
     },
     created() {
       console.log('created: ');
       const me = this;
-      me.$electron.ipcRenderer.on('error-renameFile', (event, arg) => {
-        // Print 2
-        console.log('irene', arg);
+      me.$electron.ipcRenderer.on('error-renameFile', () => {
+        me.showError('is-danger', 'No se ha podido renombrar el archivo, inténtalo de nuevo.');
       });
       me.$electron.ipcRenderer.on('success-renameFile', (event, arg) => {
-        // Print 2
-        console.log('irene', arg);
+        me.$refs.droplyOne.removeAllFiles();
+        me.file = null;
+        me.showError('is-success', `Se ha renombrado corecctamente. Puedes encontrarlo en: ${arg}.`);
       });
     },
   };
@@ -171,7 +234,22 @@
       );
     height: 100vh;
     padding: 60px 80px;
-    width: 100vw;
+    width: 100%;
+  }
+  .notification-wrapper {
+    display: flex;
+    position: relative;
+    top: -45px;
+    width: 100%;
+    height: auto;
+    flex-direction: column;
+    padding: 5px 5px;
+    z-index: 5;
+    .notification {
+      width: 100%;
+      margin-top: 5px;
+      margin-bottom: 0;
+    }
   }
 
   #logo {
