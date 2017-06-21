@@ -1,5 +1,5 @@
 <template>
-  <div id='main-wrapper' class='content'>
+  <div id='main-wrapper' class='content' @dragover.prevent @drop.prevent>
     <div class='notification-wrapper' v-if='notifications.length > 0'>
       <div v-for='(item, index) in notifications'
           :class='item.type'
@@ -15,9 +15,10 @@
         <div v-for='(item, index) in nameOptions'
               class='field'
               :key='index'>
-          <p class='control'> {{item.name}}
+          <p class='control'>
+            <span class='label'> {{item.name}} : </span>
             <span class='select'>
-              <select name='item.name' @change='onSelect'>
+              <select :name='item.name' @change='onSelect'>
                 <option v-for='(option, index) in item.options'
                         :value='option.name'
                         :key='index'>
@@ -27,14 +28,13 @@
             </span>
           </p>
         </div>
-        </div>
         <a class='button is-info'
           v-on:click='onRenameFile'>Re-name</a>
       </div>
       <div class='column is-three-quarters'>
         <div id='dropzone-wrapper' class='tile'>
           <div class='tile is-child box'>
-            <p class='title'>Hello World</p>
+            <p class='title'>File</p>
             <p class='text-center'>
               Arrastra o selecciona el archivo que quieras renombrar :)
             </p>
@@ -121,8 +121,14 @@
         processQueue: false,
         showRemoveAllButton: false,
         notifications: [],
-        compoundName: null,
       };
+    },
+    computed: {
+      compoundName() {
+        const temp = [];
+        this.nameOptions.forEach(item => (temp[item.name] = ''));
+        return temp;
+      },
     },
     methods: {
       onSelect(event) {
@@ -188,16 +194,6 @@
         .then(newName => me.$electron.ipcRenderer.send('renameFile', path, me.file.name, newName),
         () => { me.showError('is-danger', 'comprueba que todos los campos tengan un valor.'); });
       },
-      generateFields() {
-        let temp;
-        this.nameOptions.forEach((option) => {
-          temp[option.name] = '';
-        });
-        return temp;
-      },
-    },
-    beforeMount() {
-      this.compoundName = this.generateFields();
     },
     created() {
       console.log('created: ');
